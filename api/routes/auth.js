@@ -21,19 +21,17 @@ router.post("/register", async (req,res)=>{
 
 // login
 
-router.post("login" ,async(req,res)=>{
+router.post("/login" ,async(req,res)=>{
     try {
-        const user = await User.findOne({
-            email : req.body.email
-        });
+        const user = await User.findOne({email : req.body.email});
         !user && res.status(401).json("wrong password or username");
-        var orginalpassword = CryptoJS.AES.decrypt(user.password, process.env.SECRET_KEY);
-        console.log(orginalpassword);
-
+        const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET_KEY);
+        const orginalpassword = bytes.toString(CryptoJS.enc.Utf8);
         if(orginalpassword !== req.body.password){
             res.status(401).json("Wrong password or username");
         }else{
-            res.status(200).json(user);
+            const {password,...info} = user._doc
+            res.status(200).json(info);
         }
     } catch(error) {
         res.status(500).json(error);
